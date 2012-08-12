@@ -2547,9 +2547,9 @@ class S3DataTable(object):
     id_counter = 1
 
     def __init__(self,
-                 data,
                  fields,
                  heading,
+                 data,
                  start=0,
                  limit=None,
                  filterString=None,
@@ -2558,11 +2558,13 @@ class S3DataTable(object):
         """
             S3DataTable constructor
 
-            @param data: A list of Storages the key is of the form table.field
-                         The value is the data to be displayed in the dataTable
             @param fields: A list of field identifiers in the order of the
                            required dataTable columns. The identifier will
                            be in the format: tablename.fieldname
+            @param heading: A dictionary of field labels keyed on the field 
+                            identifier.
+            @param data: A list of Storages the key is of the form table.field
+                         The value is the data to be displayed in the dataTable
             @param start: the first row to return from the data
             @param limit: the (maximum) number of records to return
             @param filterString: The string that was used in filtering the records
@@ -2665,6 +2667,10 @@ class S3DataTable(object):
 
             @param id: The id of the table for which this ajax call will
                        respond to.
+            @param sEcho: An unaltered copy of sEcho sent from the client used
+                          by dataTables as a draw count.
+            @param totalrows: The total rows in the unfiltered query.
+            @param displayrows: The total rows in the filtered query.
             @param attr: dictionary of attributes which can be passed in
         """
         from gluon.serializers import json

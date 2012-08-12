@@ -89,28 +89,28 @@ class S3DataTableTests(unittest.TestCase):
         """
             render to an HTML TABLE
         """
-        dt = S3DataTable(self.data, self.lfields, self.row)
+        dt = S3DataTable(self.lfields, self.row, self.data)
         actual = dt.html()
         # @todo: Need to add a test for the format returned
-        print actual
-        dt = S3DataTable(self.data, self.lfields, self.row, start = 3, limit = 5)
+        #print actual
+        dt = S3DataTable(self.lfields, self.row, self.data, start = 3, limit = 5)
         actual = dt.html()
         # @todo: Need to add a test for the format returned
-        print actual
+        #print actual
 
 
     def testSqlTableJSON(self):
         """
             render to a JSON Object
         """
-        dt = S3DataTable(self.data, self.lfields, self.row)
+        dt = S3DataTable(self.lfields, self.row, self.data)
         actual = dt.json("list_1", 1, 14, 14)
         # @todo: Need to add a test for the format returned
-        print actual
-        dt = S3DataTable(self.data, self.lfields, self.row, start = 3, limit = 5)
+        #print actual
+        dt = S3DataTable(self.lfields, self.row, self.data, start = 3, limit = 5)
         actual = dt.json("list_1", 1, 14, 14)
         # @todo: Need to add a test for the format returned
-        print actual
+        #print actual
 
     def tearDown(cls):
         pass
