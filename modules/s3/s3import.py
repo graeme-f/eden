@@ -858,18 +858,13 @@ class S3Importer(S3CRUD):
         s3.dataTableStyleWarning = error_list
 
         s3.dataTableSelectable = True
-        s3.dataTablePostMethod = True
         table = output["items"]
         job = INPUT(_type="hidden", _id="importUploadID", _name="job",
                     _value="%s" % upload_id)
-        mode = INPUT(_type="hidden", _id="importMode", _name="mode",
-                     _value="Inclusive")
         # only select the rows with no errors
-        selected = INPUT(_type="hidden", _id="importSelected",
-                         _name="selected", _value="[%s]" % select_id)
-        form = FORM(table, job, mode, selected)
+        s3.dataTablesSelected = "[%s]" % select_id
+        form = FORM(table, job)
         output["items"] = form
-        s3.dataTableSelectSubmitURL = "import?job=%s&" % upload_id
         s3.actions = [
                         dict(label= str(self.messages.item_show_details),
                              _class="action-btn",

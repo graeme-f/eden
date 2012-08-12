@@ -11,7 +11,7 @@ $(document).ready(function() {
         //var myList = document.getElementById(S3.dataTables.id);
         var myList = $("#" + S3.dataTables.id);
     } else {
-	//var myList = document.getElementById("list");
+    //var myList = document.getElementById("list");
         var myList = $("#list");
     }
     if (myList != null) {
@@ -200,26 +200,26 @@ $(document).ready(function() {
     }
 
     if (S3.dataTables.Selectable) {
-        var selected = jQuery.parseJSON($('#importSelected').val())
+        var selected = jQuery.parseJSON($('#bulkSelected').val())
         if (selected == null) {
-        	selected = []
+            selected = []
         }
         var selectionMode = 'Inclusive';
         if (S3.dataTables.SelectAll) {
-        	var selectionMode = 'Exclusive';
+            var selectionMode = 'Exclusive';
         }
     }
 
     function fnGetSelected(oTableLocal) {
-	    var aReturn = new Array();
-	    var aTrs = oTableLocal.fnGetNodes();
+        var aReturn = new Array();
+        var aTrs = oTableLocal.fnGetNodes();
 
-	    for (var i=0; i<aTrs.length; i++) {
-		    if ( $(aTrs[i]).hasClass('row_selected') ) {
-			    aReturn.push( aTrs[i] );
-		    }
-	    }
-	    return aReturn;
+        for (var i=0; i<aTrs.length; i++) {
+            if ( $(aTrs[i]).hasClass('row_selected') ) {
+                aReturn.push( aTrs[i] );
+            }
+        }
+        return aReturn;
     }
 
     function posn_in_List(id, list) {
@@ -271,29 +271,48 @@ $(document).ready(function() {
         createSubmitBtn();
     }
 
+    /* Code to calculate the bulk action buttons, and where to place them
+       They will actually be placed on the dataTable inside the fnHeaderCallback
+       It is necessary to do this inside of the callback because the dataTable().fnDraw
+       that these buttons trigger will remove the on click binding. */
+    if (S3.dataTables.Selectable) {
+        var bulk_action_btns = '<span class="dataTable-btn" id="modeSelectionNone">Deselect&nbsp;All</span>'
+                             + '&nbsp;<span class="dataTable-btn" id="modeSelectionAll">Select&nbsp;All</span>';
+        if (S3.dataTables.ShowAllValidButton){
+            var bulk_action_btns = '<span class="dataTable-btn" id="modeSelectionValid">Select&nbsp;Valid</span>&nbsp;' + bulk_action_btns;
+        }
+        var postAction = ''
+        for (var i=0, iLen=S3.dataTables.BulkActions.length; i < iLen; i++) {
+            postAction += '<input type="submit" id="submitSelection" value="'+S3.dataTables.BulkActions[i]+'">&nbsp;';
+        }
+        var bulk_action_controls = '<span class="dataTable-action">' + bulk_action_btns + postAction + '<span>';
+        // Add hidden fields to the form to record what has been selected
+        if (S3.dataTables.Selected){
+            sel = '"' + S3.dataTables.Selected + '"';
+        } else {
+            sel = '""';
+        }
+        var hidden_fields = '<input type="hidden", id="'+ S3.dataTables.id + 'bulkMode", name="mode", value="Inclusive">'
+                          + '<input type="hidden", id="'+ S3.dataTables.id + 'bulkSelected" name="selected", value='+ sel +'>';
+    }
+
     function createSubmitBtn() {
-        if (S3.dataTables.Selectable)
-            $('.actionButton').remove();
-        	if (S3.dataTables.id)
-        		paginateBtns = '#' + S3.dataTables.id + '_paginate';
-        	else
-        		paginateBtns = '#list_paginate';
-    		if (S3.dataTables.PostSubmitPosn == 'top')
-    			place = "#series_summary_filter";
-    		else
-    			place = paginateBtns;
-        	if (S3.dataTables.UsePostMethod){
-        		$('#importMode').val(selectionMode)
-        		$('#importSelected').val(selected.join(','))
-        		$('<div class="actionButton"><input type="submit" class="action-btn" id="submitSelection" value="'+S3.dataTables.PostSubmitLabel+'"></div>').insertBefore(place);
-        	} else {
-	            URL = S3.dataTables.SelectURL
-	            	+ 'mode='
-	            	+ selectionMode
-	            	+ '&selected='
-	            	+ selected.join(',')
-	            	+ '&post';
-	            $('<div class="actionButton"><a class="action-btn" id="submitSelection" href='+URL+'>Submit</a></div>').insertBefore(place);
+        if (S3.dataTables.Selectable) {
+            // Make sure that the details of the selected records are stored in the hidden fields
+            $('#' + S3.dataTables.id + 'bulkMode').val(selectionMode);
+            $('#' + S3.dataTables.id + 'bulkSelected').val(selected.join(','));
+            // Add the bulk action controls to the dataTable
+            $('.dataTable-action').remove();
+            if (S3.dataTables.BulkActionPosn == 'top')
+                place = "#series_summary_filter";
+            else {
+                if (S3.dataTables.id)
+                    paginateBtns = '#' + S3.dataTables.id + '_paginate';
+                else
+                    paginateBtns = '#list_paginate';
+                place = paginateBtns;
+            }
+            $(bulk_action_controls).insertBefore(place);
         }
     }
 
@@ -323,20 +342,13 @@ $(document).ready(function() {
         'aLengthMenu': [[ 25, 50, -1], [ 25, 50, S3.i18n.all]],
         'bProcessing': bProcessing,
         'sAjaxSource': sAjaxSource,
-	    'fnServerData': fnDataTablesPipeline,
-	    'fnHeaderCallback': function( nHead, aasData, iStart, iEnd, aiDisplay ) {
-	    	var selectButtons = '<span class="dataTable-btn" id="modeSelectionNone">Deselect&nbsp;All</span>';
-	    	selectButtons += '&nbsp;<span class="dataTable-btn" id="modeSelectionAll">Select&nbsp;All</span>';
-	    	if (S3.dataTables.ShowAllValidButton){
-	    		var selectButtons = '<span class="dataTable-btn" id="modeSelectionValid">Select&nbsp;Valid</span>&nbsp;' + selectButtons;
-	    	}
-            if (S3.dataTables.Selectable) {
-                nHead.getElementsByTagName('th')[0].innerHTML = selectButtons;
-            }
-            $('#modeSelectionAll').bind('click', setModeSelectionAll);
-            $('#modeSelectionNone').bind('click', setModeSelectionNone);
-            $('#modeSelectionValid').bind('click', setModeSelectionValid);
-            },
+        'fnServerData': fnDataTablesPipeline,
+        'fnHeaderCallback' : function (nHead, aasData, iStart, iEnd, aiDisplay) {
+            $('#modeSelectionAll').on('click', setModeSelectionAll);
+            $('#modeSelectionNone').on('click', setModeSelectionNone);
+            $('#modeSelectionValid').on('click', setModeSelectionValid);
+            $(hidden_fields).insertAfter('#' + S3.dataTables.id + '_wrapper');
+        },
         'fnRowCallback': function( nRow, aData, iDisplayIndex ) {
             // Extract the id # from the link
             var re = />(.*)</i;
@@ -346,49 +358,54 @@ $(document).ready(function() {
             } else {
                 var id = result[1];
             }
-            // Code to toggle the selection of the row
-            if (S3.dataTables.Selectable) {
-            	$(nRow).unbind('click');
-                $(nRow).click( function() {
-		            if (posn_in_List(id, selected) == -1) {
-		                selected.push(id);
-		            } else {
-		                selected.splice(posn_in_List(id, selected), 1);
-		            }
-		            setSelectionClass(nRow, posn_in_List(id, selected));
-                });
-                // Set the row_selected based on selected and selectionMode
-                setSelectionClass(nRow, posn_in_List(id, selected));
-            }
             // Set the action buttons in the id (first) column for each row
-            if (S3.dataTables.Actions) {
-                var Actions = S3.dataTables.Actions;
+            if (S3.dataTables.Actions || S3.dataTables.Selectable) {
                 var Buttons = '';
-                // Loop through each action to build the button
-                for (var i=0; i < Actions.length; i++) {
-                    $('th:eq(0)').css( { 'width': 'auto' } );
-                    // Check if action is restricted to a subset of records
-                    if ('restrict' in Actions[i]) {
-                        if (posn_in_List(id, Actions[i].restrict) == -1) {
-                            continue;
+                if (S3.dataTables.Actions) {
+                    var Actions = S3.dataTables.Actions;
+                    // Loop through each action to build the button
+                    for (var i=0; i < Actions.length; i++) {
+
+                        $('th:eq(0)').css( { 'width': 'auto' } );
+
+                        // Check if action is restricted to a subset of records
+                        if ('restrict' in Actions[i]) {
+                            if (posn_in_List(id, Actions[i].restrict) == -1) {
+                                continue;
+                            }
+                        }
+                        var c = Actions[i]._class;
+                        var label = S3.Utf8.decode(Actions[i].label);
+                        re = /%5Bid%5D/g;
+                        if (Actions[i]._onclick) {
+                            var oc = Actions[i]._onclick.replace(re, id);
+                            Buttons = Buttons + '<a class="' + c + '" onclick="' + oc + '">' + label + '</a>' + '&nbsp;';
+                        } else if (Actions[i]._jqclick) {
+                            Buttons = Buttons + '<span class="' + c + '" id="' + id + '">' + label + '</span>' + '&nbsp;';
+                            actionCallBacks.push([id, S3ActionCallBack]);
+                        }else {
+                            var url = Actions[i].url.replace(re, id);
+                            Buttons = Buttons + '<a class="'+ c + '" href="' + url + '">' + label + '</a>' + '&nbsp;';
                         }
                     }
-                    var c = Actions[i]._class;
-                    var label = S3.Utf8.decode(Actions[i].label);
-                    re = /%5Bid%5D/g;
-                    if (Actions[i]._onclick) {
-                        var oc = Actions[i]._onclick.replace(re, id);
-                        Buttons = Buttons + '<a class="' + c + '" onclick="' + oc + '">' + label + '</a>' + '&nbsp;';
-                    } else if (Actions[i]._jqclick) {
-                        Buttons = Buttons + '<span class="' + c + '" id="' + id + '">' + label + '</span>' + '&nbsp;';
-                        actionCallBacks.push([id, S3ActionCallBack]);
-                    }else {
-                        var url = Actions[i].url.replace(re, id);
-                        Buttons = Buttons + '<a class="'+ c + '" href="' + url + '">' + label + '</a>' + '&nbsp;';
-                    }
+                }
+                if (S3.dataTables.Selectable) {
+                    Buttons = Buttons + '<input id="select' + id + '"type="checkbox">'
                 }
                 // Set the first column to the action buttons
                 $('td:eq(0)', nRow).html( Buttons );
+            }
+            // Code to toggle the selection of the row
+            if (S3.dataTables.Selectable) {
+                $('#select'+id).on('click', function(event){
+                    if (posn_in_List(id, selected) == -1) {
+                        selected.push(id);
+                    } else {
+                        selected.splice(posn_in_List(id, selected), 1);
+                    }
+                    setSelectionClass(nRow, posn_in_List(id, selected));
+                });
+                setSelectionClass(nRow, posn_in_List(id, selected));
             }
             if (S3.dataTables.Disabled) {
                 if (posn_in_List(id, S3.dataTables.Disabled) > -1) {
@@ -427,24 +444,24 @@ $(document).ready(function() {
             }
             if (S3.dataTables.group)
             {
-	            var nTrs = $('.dataTable tbody tr');
-	            var iColspan = nTrs[0].getElementsByTagName('td').length;
-	            var sLastGroup = "";
-	            for (var i=0; i<nTrs.length; i++)
-	            {
-	                var sGroup = oSettings.aoData[ oSettings.aiDisplay[i] ]._aData[S3.dataTables.group];
-	                if ( sGroup != sLastGroup )
-	                {
-	                    var nGroup = document.createElement( 'tr' );
-	                    var nCell = document.createElement( 'td' );
-	                    nCell.colSpan = iColspan;
-	                    nCell.className = "group";
-	                    nCell.innerHTML = sGroup;
-	                    nGroup.appendChild( nCell );
-	                    nTrs[i].parentNode.insertBefore( nGroup, nTrs[i] );
-	                    sLastGroup = sGroup;
-	                }
-	            }
+                var nTrs = $('.dataTable tbody tr');
+                var iColspan = nTrs[0].getElementsByTagName('td').length;
+                var sLastGroup = "";
+                for (var i=0; i<nTrs.length; i++)
+                {
+                    var sGroup = oSettings.aoData[ oSettings.aiDisplay[i] ]._aData[S3.dataTables.group];
+                    if ( sGroup != sLastGroup )
+                    {
+                        var nGroup = document.createElement( 'tr' );
+                        var nCell = document.createElement( 'td' );
+                        nCell.colSpan = iColspan;
+                        nCell.className = "group";
+                        nCell.innerHTML = sGroup;
+                        nGroup.appendChild( nCell );
+                        nTrs[i].parentNode.insertBefore( nGroup, nTrs[i] );
+                        sLastGroup = sGroup;
+                    }
+                }
             }
             if (Math.ceil((this.fnSettings().fnRecordsDisplay()) / this.fnSettings()._iDisplayLength) > 1)  {
                 $('.dataTables_paginate').css("display", "block");
@@ -458,11 +475,11 @@ $(document).ready(function() {
                      ]
     });
 
-	if (S3.dataTables.hideList) {
-		for (var i=0; i<S3.dataTables.hideList.length; i++){
-			$('.dataTable').dataTable().fnSetColumnVis(S3.dataTables.hideList[i], false);
-		}
-	}
+    if (S3.dataTables.hideList) {
+        for (var i=0; i<S3.dataTables.hideList.length; i++){
+            $('.dataTable').dataTable().fnSetColumnVis(S3.dataTables.hideList[i], false);
+        }
+    }
 
     if (S3.dataTables.Resize) {
         // Resize the Columns after hiding extra data

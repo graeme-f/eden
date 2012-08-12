@@ -8,13 +8,15 @@
 S3.i18n.all='{{=T("All")}}'
 S3.dataTables=new Array()
 {{if s3.dataTableSelectable:}}S3.dataTables.Selectable=true{{pass}}
+{{if s3.dataTablesSelected:}}S3.dataTables.Selected={{=s3.dataTablesSelected}}{{pass}}
 {{if s3.dataTableSelectAll:}}S3.dataTables.SelectAll=true{{pass}}
 {{if s3.dataTableSelectAllValid:}}S3.dataTables.ShowAllValidButton=true{{pass}}
-{{if s3.dataTablePostMethod:}}S3.dataTables.UsePostMethod=true{{else:}}S3.dataTables.UsePostMethod=false{{pass}}
-{{if s3.dataTableSubmitLabel:}}S3.dataTables.PostSubmitLabel='{{=s3.dataTableSubmitLabel}}'
-  {{if s3.dataTableSubmitLabelPosn:}}S3.dataTables.PostSubmitPosn='{{=s3.dataTableSubmitLabelPosn}}'{{else:}}S3.dataTables.PostSubmitPosn='bottom'{{pass}}
-{{else:}}S3.dataTables.PostSubmitLabel='{{=T("Submit")}}'{{pass}}
-{{if s3.dataTableSelectSubmitURL:}}S3.dataTables.SelectURL='{{=XML(s3.dataTableSelectSubmitURL)}}'{{else:}}S3.dataTables.SelectURL="?"{{pass}}
+{{if s3.dataTableBulkActions:}}S3.dataTables.BulkActions=[
+{{s3.dataTableBulkActions = [s3.dataTableBulkActions] if not isinstance (s3.dataTableBulkActions, (tuple, list)) else s3.dataTableBulkActions
+for lbl in s3.dataTableBulkActions:}}'{{=lbl}}',{{pass}}
+]
+{{else:}}S3.dataTables.BulkActions=['{{=T("Submit")}}']{{pass}}
+{{if s3.dataTableBulkActionPosn:}}S3.dataTables.BulkActionPosn='{{=s3.dataTableBulkActionPosn}}'{{else:}}S3.dataTables.BulkActionPosn='bottom'{{pass}}
 {{if s3.actions:}}
  S3.dataTables.Actions={{=XML(s3.actions)}}
  {{if "_jqclick" in s3.actions[-1]:}}

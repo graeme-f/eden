@@ -1785,7 +1785,7 @@ class S3SeriesModel(S3Model):
             output["title"] = crud_strings.title_analysis_summary
             output["subtitle"] = crud_strings.subtitle_analysis_summary
             output["help"] = crud_strings.help_analysis_summary
-            s3.dataTableSubmitLabelPosn = "top"
+            s3.dataTableBulkActionPosn = "top"
             s3.actions = None
         current.response.view = "survey/series_summary.html"
         return output
@@ -2534,15 +2534,14 @@ def buildSeriesSummary(series_id, posn_offset):
     s3.dataTableID = "series_summary"
     # Turn multi-select on
     s3.dataTableSelectable = True
-    s3.dataTablePostMethod = True
-    s3.dataTableSubmitLabel = current.T("Display Selected Questions")
+    s3.dataTableBulkActions = [current.T("Display Selected Questions")]
     series = INPUT(_type="hidden", _id="selectSeriesID", _name="series",
                 _value="%s" % series_id)
-    mode = INPUT(_type="hidden", _id="importMode", _name="mode",
-                 _value="Inclusive")
-    selected = INPUT(_type="hidden", _id="importSelected",
-                     _name="selected", _value="")
-    form = FORM(table, series, mode, selected)
+#    mode = INPUT(_type="hidden", _id="importMode", _name="mode",
+#                 _value="Inclusive")
+#    selected = INPUT(_type="hidden", _id="importSelected",
+#                     _name="selected", _value="")
+    form = FORM(table, series)#, mode, selected)
     return form
 
 # =============================================================================
